@@ -1,4 +1,4 @@
-package com.darob.coronovirustracker;
+package com.darob.coronovirustracker.services;
 
 import models.LocationStats;
 import org.apache.commons.csv.CSVFormat;
@@ -19,7 +19,12 @@ import java.util.List;
 @Service
 public class CoronavirusDataService {
     private static String  VIRUS_DATA_URL = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv";
-    List<LocationStats> allStates = new ArrayList<>();
+    private List<LocationStats> allStates = new ArrayList<>();
+
+    public List<LocationStats> getAllStates() {
+        return allStates;
+    }
+
     @PostConstruct
     @Scheduled(cron = "* * 1 * * *")
     public void fetchVirusData() throws IOException, InterruptedException {
@@ -32,11 +37,11 @@ public class CoronavirusDataService {
         System.out.println(httpResponse.body());
 
         StringReader csvBodyReader = new StringReader(httpResponse.body());
-        Iterable<CSVRecord> records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(csvBodyReader);
+        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(csvBodyReader);
         for (CSVRecord record : records) {
             LocationStats locationStat = new LocationStats();
             locationStat.setState(record.get("Province/State"));
-            locationStat.setCountry(record.get("Country/region"));
+            locationStat.setCountry(record.get("Country/Region"));
             locationStat.setCasesTotal(Integer.parseInt(record.get(record.size() - 1)));
             System.out.println(locationStat);
             newStates.add(locationStat);
